@@ -1,0 +1,252 @@
+
+<style>
+@keyframes bup  { 0%{transform:translateY(0);opacity:.85} 100%{transform:translateY(-30px);opacity:0} }
+@keyframes bfst { 0%{transform:translateY(0);opacity:.85} 100%{transform:translateY(-30px);opacity:0} }
+@keyframes flow-e { 0%{stroke-dashoffset:20} 100%{stroke-dashoffset:0} }
+@keyframes fadein { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+@keyframes slidein { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:none} }
+
+.btn-step {
+  padding:6px 11px;font-size:13px;font-weight:500;
+  border:0.5px solid var(--color-border-secondary);
+  border-radius:var(--border-radius-md);
+  background:var(--color-background-secondary);
+  color:var(--color-text-primary);cursor:pointer;
+}
+.btn-step.active {
+  background:var(--color-background-info);
+  color:var(--color-text-info);
+  border-color:var(--color-border-info);
+}
+.eq-box  { border-radius:6px;padding:7px 11px;font-size:13px;font-family:var(--font-mono);animation:fadein .35s ease both; }
+.obs-box { border-radius:var(--border-radius-md);padding:9px 13px;font-size:13px;animation:fadein .35s ease both; }
+#signup-screen { animation:fadein .4s ease both; }
+#lab-screen { display:none; animation:slidein .4s ease both; }
+</style>
+
+<!-- SIGNUP -->
+<div id="signup-screen" style="padding:1.25rem 0">
+  <div style="text-align:center;margin-bottom:1.25rem">
+    <p style="font-size:11px;letter-spacing:.08em;color:var(--color-text-tertiary);margin:0 0 5px;text-transform:uppercase">Лабораторна робота</p>
+    <p style="font-size:18px;font-weight:500;color:var(--color-text-primary);margin:0 0 3px">Дослід № 1</p>
+    <p style="font-size:14px;color:var(--color-text-secondary);margin:0">«Дослідження хімічної та електрохімічної корозії цинку»</p>
+  </div>
+  <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;max-width:380px;margin:0 auto">
+    <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 .9rem">Для початку роботи підпишіть звіт:</p>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:3px">Прізвище</label>
+      <input id="inp-last" type="text" placeholder="Іваненко" oninput="checkForm()"
+        style="width:100%;box-sizing:border-box;padding:8px 11px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);outline:none"/>
+    </div>
+    <div style="margin-bottom:1.1rem">
+      <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:3px">Ім'я</label>
+      <input id="inp-first" type="text" placeholder="Олексій" oninput="checkForm()"
+        style="width:100%;box-sizing:border-box;padding:8px 11px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);outline:none"/>
+    </div>
+    <button id="start-btn" onclick="startLab()" disabled
+      style="width:100%;padding:9px;font-size:14px;font-weight:500;cursor:not-allowed;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-tertiary);color:var(--color-text-tertiary);transition:all .2s">
+      Розпочати дослід
+    </button>
+  </div>
+</div>
+
+<!-- LAB -->
+<div id="lab-screen">
+  <!-- header -->
+  <div style="border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:.6rem;margin-bottom:.75rem">
+    <p style="font-size:11px;letter-spacing:.08em;color:var(--color-text-tertiary);margin:0 0 1px;text-transform:uppercase">Лабораторна робота</p>
+    <p style="font-size:15px;font-weight:500;color:var(--color-text-primary);margin:0 0 1px">Дослід № 1 · «Дослідження хімічної та електрохімічної корозії цинку»</p>
+    <p id="student-name-display" style="font-size:13px;color:var(--color-text-secondary);margin:0"></p>
+  </div>
+
+  <!-- steps -->
+  <div style="display:flex;gap:5px;margin-bottom:.75rem;flex-wrap:wrap">
+    <button class="btn-step active" id="s0" onclick="setStage(0)">Підготовка</button>
+    <button class="btn-step" id="s1" onclick="setStage(1)">Додати Zn</button>
+    <button class="btn-step" id="s2" onclick="setStage(2)">Додати Zn + Cu</button>
+    <button class="btn-step" id="s3" onclick="setStage(3)">Спостереження</button>
+    <button class="btn-step" id="s4" onclick="setStage(4)">Пояснення</button>
+  </div>
+
+  <!-- SVG: 2 compact test tubes side by side, centered -->
+  <!-- Tube dims: width=52, height=170, bottom arc r≈26 -->
+  <!-- T1 centre x=170, T2 centre x=510, liquid top y=95, bottom arc top y=200 -->
+  <svg id="main" width="100%" viewBox="0 0 680 230" style="display:block">
+    <defs>
+      <marker id="earr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+      <clipPath id="cl1"><path d="M144 95 L144 196 Q144 212 170 212 Q196 212 196 196 L196 95 Z"/></clipPath>
+      <clipPath id="cl2"><path d="M484 95 L484 196 Q484 212 510 212 Q536 212 536 196 L536 95 Z"/></clipPath>
+    </defs>
+
+    <!-- ── TUBE 1 ── -->
+    <!-- labels above -->
+    <text class="th" x="170" y="14" text-anchor="middle" fill="var(--p)" font-size="14">Пробірка 1</text>
+    <text class="ts" x="170" y="27" text-anchor="middle" fill="var(--s)" font-size="12">Хімічна корозія</text>
+
+    <!-- glass outline -->
+    <path d="M141 34 L141 196 Q141 216 170 216 Q199 216 199 196 L199 34"
+          fill="none" stroke="var(--p)" stroke-width="1.5" opacity=".28"/>
+    <!-- inner faint fill -->
+    <path d="M144 34 L144 196 Q144 212 170 212 Q196 212 196 196 L196 34"
+          fill="var(--p)" opacity=".03"/>
+    <!-- rim -->
+    <line x1="138" y1="34" x2="202" y2="34" stroke="var(--p)" stroke-width="1.5" opacity=".28"/>
+    <!-- glass shine -->
+    <line x1="146" y1="38" x2="146" y2="195" stroke="white" stroke-width="1.5" opacity=".18"/>
+
+    <!-- liquid -->
+    <rect x="144" y="95" width="52" height="117" fill="#e8f4ff" opacity=".5" clip-path="url(#cl1)"/>
+    <line x1="144" y1="95" x2="196" y2="95" stroke="#7ab0d0" stroke-width=".8" opacity=".8"/>
+    <text x="170" y="89" text-anchor="middle" fill="#4a7898" font-size="12" font-family="var(--font-sans)">H₂SO₄</text>
+
+    <!-- Zn T1 -->
+    <g id="zn1" opacity="0">
+      <ellipse cx="170" cy="197" rx="14" ry="8"   fill="#7a7a82" stroke="#565660" stroke-width=".8"/>
+      <ellipse cx="170" cy="195" rx="11" ry="5.5" fill="#9292a0"/>
+      <ellipse cx="167" cy="193" rx="4"  ry="2.2" fill="#b4b4c0" opacity=".65"/>
+      <ellipse cx="174" cy="196" rx="2"  ry="1.3" fill="#606068" opacity=".4"/>
+    </g>
+    <text id="zn1-lbl" class="ts" x="170" y="213" text-anchor="middle" fill="#505058" font-size="11" opacity="0">Zn</text>
+
+    <!-- bubble container T1 -->
+    <g id="bubbles1"></g>
+    <text id="h2lbl1" x="206" y="162" fill="#3a68a0" font-size="12" font-family="var(--font-sans)" opacity="0">H₂↑</text>
+
+    <!-- ── TUBE 2 ── -->
+    <text class="th" x="510" y="14" text-anchor="middle" fill="var(--p)" font-size="14">Пробірка 2</text>
+    <text class="ts" x="510" y="27" text-anchor="middle" fill="var(--s)" font-size="12">Електрохімічна корозія</text>
+
+    <path d="M481 34 L481 196 Q481 216 510 216 Q539 216 539 196 L539 34"
+          fill="none" stroke="var(--p)" stroke-width="1.5" opacity=".28"/>
+    <path d="M484 34 L484 196 Q484 212 510 212 Q536 212 536 196 L536 34"
+          fill="var(--p)" opacity=".03"/>
+    <line x1="478" y1="34" x2="542" y2="34" stroke="var(--p)" stroke-width="1.5" opacity=".28"/>
+    <line x1="486" y1="38" x2="486" y2="195" stroke="white" stroke-width="1.5" opacity=".18"/>
+
+    <rect x="484" y="95" width="52" height="117" fill="#e8f4ff" opacity=".5" clip-path="url(#cl2)"/>
+    <line x1="484" y1="95" x2="536" y2="95" stroke="#7ab0d0" stroke-width=".8" opacity=".8"/>
+    <text x="510" y="89" text-anchor="middle" fill="#4a7898" font-size="12" font-family="var(--font-sans)">H₂SO₄</text>
+
+    <!-- Zn T2 -->
+    <g id="zn2" opacity="0">
+      <ellipse cx="500" cy="198" rx="14" ry="8"   fill="#7a7a82" stroke="#565660" stroke-width=".8"/>
+      <ellipse cx="500" cy="196" rx="11" ry="5.5" fill="#9292a0"/>
+      <ellipse cx="497" cy="194" rx="4"  ry="2.2" fill="#b4b4c0" opacity=".65"/>
+      <ellipse cx="504" cy="197" rx="2"  ry="1.3" fill="#606068" opacity=".4"/>
+    </g>
+    <text id="zn2-lbl" class="ts" x="500" y="214" text-anchor="middle" fill="#505058" font-size="11" opacity="0">Zn</text>
+
+    <!-- Cu wire: top at y=102, bottom bends to touch Zn top (cy-ry=198-8=190) -->
+    <g id="cu-wire" opacity="0">
+      <rect x="520" y="102" width="7" height="88" rx="3.5" fill="#b86020" stroke="#8a4010" stroke-width=".7"/>
+      <rect x="521" y="104" width="2.5" height="84" rx="1.5" fill="#d88040" opacity=".4"/>
+      <!-- bend touching Zn -->
+      <path d="M523 190 Q520 196 517 197" fill="none" stroke="#b86020" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <text id="cu-lbl" x="534" y="148" fill="#7a3808" font-size="12" font-family="var(--font-sans)" opacity="0">Cu</text>
+
+    <!-- bubbles T2 -->
+    <g id="bubbles2"></g>
+    <text id="h2lbl2"  x="546" y="148" fill="#3a68a0" font-size="12" font-family="var(--font-sans)" opacity="0">H₂↑</text>
+    <text id="h2lbl2b" x="546" y="162" fill="#3a68a0" font-size="12" font-family="var(--font-sans)" opacity="0">(на Cu)</text>
+
+    <!-- electron flow -->
+    <path id="eflow" d="M513 192 Q523 207 522 195" fill="none" stroke="#c06010"
+          stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#earr)" opacity="0"
+          style="animation:flow-e .8s linear infinite"/>
+    <text id="eflow-lbl" x="510" y="224" text-anchor="middle" fill="#c06010" font-size="12" font-family="var(--font-sans)" opacity="0">e⁻ від Zn до Cu</text>
+
+    <!-- speed -->
+    <text id="spd" x="340" y="120" text-anchor="middle" fill="var(--color-text-danger)" font-size="13" font-family="var(--font-sans)" opacity="0">Пробірка 2 — набагато швидше!</text>
+    <line id="sa1" x1="207" y1="127" x2="222" y2="148" stroke="var(--color-text-danger)" stroke-width=".8" marker-end="url(#earr)" opacity="0"/>
+    <line id="sa2" x1="473" y1="127" x2="458" y2="148" stroke="var(--color-text-danger)" stroke-width=".8" marker-end="url(#earr)" opacity="0"/>
+  </svg>
+
+  <div id="info-panel" style="margin-top:.5rem"></div>
+</div>
+
+<script>
+var SVG_NS = 'http://www.w3.org/2000/svg';
+
+var BUBBLES1 = [
+  {cx:161,cy:178,r:3,  delay:'.3s', dur:'3.2s'},
+  {cx:176,cy:160,r:2,  delay:'1.5s',dur:'3.2s'},
+  {cx:165,cy:144,r:2.5,delay:'2.6s',dur:'3.2s'}
+];
+var BUBBLES2 = [
+  {cx:522,cy:170,r:3.5,delay:'.1s', dur:'1.4s'},
+  {cx:522,cy:152,r:2.5,delay:'.5s', dur:'1.4s'},
+  {cx:522,cy:135,r:3,  delay:'1.0s',dur:'1.4s'},
+  {cx:522,cy:118,r:2,  delay:'.35s',dur:'1.4s'}
+];
+
+function makeBubble(d, anim) {
+  var c = document.createElementNS(SVG_NS, 'circle');
+  c.setAttribute('cx', d.cx); c.setAttribute('cy', d.cy); c.setAttribute('r', d.r);
+  c.setAttribute('fill','none'); c.setAttribute('stroke','#70a8d8'); c.setAttribute('stroke-width','1');
+  c.style.animation = anim+' '+d.dur+' ease-in '+d.delay+' infinite';
+  return c;
+}
+function showBubbles(gid, data, anim) {
+  var g = document.getElementById(gid);
+  while (g.firstChild) g.removeChild(g.firstChild);
+  data.forEach(function(d){ g.appendChild(makeBubble(d, anim)); });
+}
+function hideBubbles(gid) {
+  var g = document.getElementById(gid);
+  while (g.firstChild) g.removeChild(g.firstChild);
+}
+function vis(id, on) { var e = document.getElementById(id); if(e) e.style.opacity = on?'1':'0'; }
+
+function checkForm() {
+  var l = document.getElementById('inp-last').value.trim();
+  var f = document.getElementById('inp-first').value.trim();
+  var btn = document.getElementById('start-btn');
+  var ok = l.length > 0 && f.length > 0;
+  btn.disabled = !ok;
+  btn.style.cursor        = ok ? 'pointer'                         : 'not-allowed';
+  btn.style.background    = ok ? 'var(--color-background-info)'   : 'var(--color-background-tertiary)';
+  btn.style.color         = ok ? 'var(--color-text-info)'         : 'var(--color-text-tertiary)';
+  btn.style.borderColor   = ok ? 'var(--color-border-info)'       : 'var(--color-border-tertiary)';
+}
+
+function startLab() {
+  var l = document.getElementById('inp-last').value.trim();
+  var f = document.getElementById('inp-first').value.trim();
+  if (!l || !f) return;
+  document.getElementById('student-name-display').textContent = 'Студент: ' + l + ' ' + f;
+  document.getElementById('signup-screen').style.display = 'none';
+  document.getElementById('lab-screen').style.display = 'block';
+  setStage(0);
+}
+
+var infos = [
+  '<div class="obs-box" style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary)"><p style="font-weight:500;color:var(--color-text-primary);margin:0 0 4px">Підготовка досліду</p><p style="color:var(--color-text-secondary);margin:0">В обидві пробірки налито по 6–7 крапель розбавленої H₂SO₄. Метали не додано — реакція не відбувається, бульбашок немає.</p></div>',
+
+  '<div class="obs-box" style="background:var(--color-background-warning)"><p style="font-weight:500;color:var(--color-text-warning);margin:0 0 4px">Спостереження — пробірка 1</p><p style="color:var(--color-text-primary);margin:0 0 7px">Цинк реагує з кислотою — поодинокі бульбашки H₂. Реакція <strong>повільна</strong>. Хімічна корозія.</p><div class="eq-box" style="background:var(--color-background-secondary)">Zn + H₂SO₄ → ZnSO₄ + H₂↑</div></div>',
+
+  '<div class="obs-box" style="background:var(--color-background-danger)"><p style="font-weight:500;color:var(--color-text-danger);margin:0 0 4px">Спостереження — пробірка 2</p><p style="color:var(--color-text-primary);margin:0 0 7px">Мідь торкається цинку → гальванічна пара. Реакція <strong>значно швидша!</strong> H₂ виділяється на Cu.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><div class="eq-box" style="background:var(--color-background-warning)"><span style="font-size:12px;color:var(--color-text-warning);font-weight:500">Анод (Zn):</span><br>Zn − 2e⁻ → Zn²⁺</div><div class="eq-box" style="background:var(--color-background-info)"><span style="font-size:12px;color:var(--color-text-info);font-weight:500">Катод (Cu):</span><br>2H⁺ + 2e⁻ → H₂↑</div></div></div>',
+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="obs-box" style="background:var(--color-background-warning)"><p style="font-weight:500;color:var(--color-text-warning);margin:0 0 4px">Пробірка 1 — хімічна</p><ul style="margin:0;padding-left:15px;color:var(--color-text-primary);line-height:1.8"><li>H₂ виділяється повільно</li><li>Zn розчиняється рівномірно</li><li>Zn + H₂SO₄ → ZnSO₄ + H₂↑</li></ul></div><div class="obs-box" style="background:var(--color-background-danger)"><p style="font-weight:500;color:var(--color-text-danger);margin:0 0 4px">Пробірка 2 — електрохімічна</p><ul style="margin:0;padding-left:15px;color:var(--color-text-primary);line-height:1.8"><li>H₂ — набагато інтенсивніше</li><li>Бульбашки переважно на Cu</li><li>Zn — анод, Cu — катод</li></ul></div></div>',
+
+  '<div style="display:grid;gap:8px"><div class="obs-box" style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary)"><p style="font-weight:500;color:var(--color-text-primary);margin:0 0 5px">Чому в пробірці 2 швидше?</p><p style="color:var(--color-text-secondary);margin:0">При контакті Zn і Cu в кислоті утворюється <strong>гальванічна пара</strong>. Zn — анод, окиснюється. Cu — катод, на ній відновлюються H⁺. Електрони течуть від Zn до Cu — корозія прискорюється у 5–10 разів.</p></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><div class="eq-box" style="background:var(--color-background-warning)"><span style="font-size:12px;color:var(--color-text-warning);font-weight:500">Анод (Zn):</span><br>Zn − 2e⁻ → Zn²⁺</div><div class="eq-box" style="background:var(--color-background-info)"><span style="font-size:12px;color:var(--color-text-info);font-weight:500">Катод (Cu):</span><br>2H⁺ + 2e⁻ → H₂↑</div><div class="eq-box" style="background:var(--color-background-secondary);grid-column:span 2"><span style="font-size:12px;color:var(--color-text-secondary);font-weight:500">Загальна:</span><br>Zn + H₂SO₄ → ZnSO₄ + H₂↑</div></div><div class="obs-box" style="background:var(--color-background-success)"><p style="font-weight:500;color:var(--color-text-success);margin:0 0 3px">Висновок</p><p style="color:var(--color-text-primary);margin:0">Електрохімічна корозія відбувається значно швидше за хімічну. Контакт двох різних металів в електроліті різко прискорює руйнування активнішого металу (Zn).</p></div><button onclick="sendPrompt(\'Які практичні способи захисту від електрохімічної корозії?\')" style="width:100%;padding:9px;font-size:13px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-secondary)">Способи захисту від електрохімічної корозії ↗</button></div>'
+];
+
+function setStage(n) {
+  for (var i=0;i<5;i++) document.getElementById('s'+i).classList.toggle('active',i===n);
+  ['zn1','zn1-lbl','zn2','zn2-lbl','cu-wire','cu-lbl',
+   'h2lbl1','h2lbl2','h2lbl2b','eflow','eflow-lbl','spd','sa1','sa2'
+  ].forEach(function(id){ vis(id,false); });
+  hideBubbles('bubbles1'); hideBubbles('bubbles2');
+
+  if (n>=1){ vis('zn1',true); vis('zn1-lbl',true); showBubbles('bubbles1',BUBBLES1,'bup'); vis('h2lbl1',true); }
+  if (n>=2){ vis('zn2',true); vis('zn2-lbl',true); vis('cu-wire',true); vis('cu-lbl',true); showBubbles('bubbles2',BUBBLES2,'bfst'); vis('h2lbl2',true); vis('h2lbl2b',true); vis('eflow',true); vis('eflow-lbl',true); }
+  if (n===3){ vis('spd',true); vis('sa1',true); vis('sa2',true); }
+  document.getElementById('info-panel').innerHTML = infos[n]||'';
+}
+
+document.getElementById('inp-last').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('inp-first').focus(); });
+document.getElementById('inp-first').addEventListener('keydown',function(e){ if(e.key==='Enter'){ var b=document.getElementById('start-btn'); if(!b.disabled) startLab(); } });
+</script>
